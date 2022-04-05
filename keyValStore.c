@@ -1,4 +1,103 @@
-//
-// Created by julia on 01/04/2022.
-//
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
+typedef struct Pair{
+    char* key;
+    char* value;
+} Pair;
+
+// Count of pairs in the storage
+int numOfPairs = 200;
+// The storage
+Pair* storage;
+
+/// Initialize the storage if not already done.
+void initializeStorage(){
+    if (storage == NULL) {
+        printf("Storage initialized!\n");
+        storage = malloc(numOfPairs * sizeof(*storage));
+    }
+}
+
+/// Searches for a Pair with index of the key in storage.
+/// \param key Pointer for the key string in search
+/// \return Index of Pair and -1 if none was found
+int getIndexOfKey(char* key){
+    for (int i = 0; i < numOfPairs; ++i) {
+        if (storage[i].key != NULL && strcmp(storage[i].key, key) == 0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+/// Prints the storage in a readable form
+void printStorage(){
+    for (int i = 0; i < numOfPairs; ++i) {
+        printf("Index in storage %i\n \tKey: %s\n \tValue: %s\n", i, storage[i].key, storage[i].value);
+    }
+}
+
+int put(char* key, char* value){
+    initializeStorage();
+
+    int indexOfKey = getIndexOfKey(key);
+
+    // printf("Index of key: %i\n", indexOfKey);
+
+    // If ke is in storage change value of that key
+    if (indexOfKey != -1){
+        strcpy(storage[indexOfKey].value, value);
+        return 1;
+    }
+    // Else if is space allocate new memory for key and value pointer
+    else {
+        for (int i = 0; i < numOfPairs; ++i) {
+            if (storage[i].key == NULL){
+                storage[i].key = (char*) malloc(sizeof (char*));
+                strcpy(storage[i].key, key);
+                storage[i].value = (char*) malloc(sizeof (char*));
+                strcpy(storage[i].value, value);
+                return 0;
+            }
+        }
+    }
+
+    // Else storage is full
+    // Maybe create extra function for extending the array (realloc)
+
+    return -1;
+}
+
+int get(char* key, char* res){
+    int indexOfKey = getIndexOfKey(key);
+
+    //printf("Index of key: %i\n", indexOfKey);
+
+    // If key is not in storage return with -1
+    if (indexOfKey == -1)
+        return -1;
+
+    // Else copy the value in the string reference
+    strcpy(res, storage[indexOfKey].value);
+
+    return 0;
+}
+
+int del(char* key){
+    int indexOfKey = getIndexOfKey(key);
+
+    // If key is not in storage return with -1
+    if (indexOfKey == -1)
+        return -1;
+
+    // Free the memory previously allocated
+    free(storage[indexOfKey].key);
+    free(storage[indexOfKey].value);
+    // Reset the pointer of the struct to NULL
+    storage[indexOfKey].key = NULL;
+    storage[indexOfKey].value = NULL;
+
+    return 0;
+}
