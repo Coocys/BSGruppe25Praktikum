@@ -1,3 +1,0 @@
-F:/Desktop/TH_Köln/SS2022/BS/Praktikum/cmake-build-debug/CMakeFiles/BSGruppe25Praktikum.dir
-F:/Desktop/TH_Köln/SS2022/BS/Praktikum/cmake-build-debug/CMakeFiles/edit_cache.dir
-F:/Desktop/TH_Köln/SS2022/BS/Praktikum/cmake-build-debug/CMakeFiles/rebuild_cache.dir
