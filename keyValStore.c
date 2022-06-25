@@ -29,7 +29,7 @@ void initializeStorage(){
 /// Get the Index of the pair in search
 int getIndexOfKey(char* key){
     for (int i = 0; i < numOfPairs; ++i) {
-        if (storage[i].key != NULL && strcmp(storage[i].key, key) == 0){
+        if (storage[i].key != NULL && strncmp(storage[i].key, key, strlen(storage[i].key)) == 0){
             return i;
         }
     }
@@ -84,6 +84,7 @@ int get(char* key, char* res){
         return -1;
 
     // Else copy the value in the string reference
+    strcpy(key, storage[indexOfKey].key);
     strcpy(res, storage[indexOfKey].value);
 
     return 0;

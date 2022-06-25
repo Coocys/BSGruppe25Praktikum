@@ -177,10 +177,10 @@ int main(int argc , char *argv[])
                     //set the string terminating NULL byte on the end
                     //of the data read
                     buffer[valread] = '\0';
-                    send(sd , buffer , strlen(buffer) , 0 );
-                    puts(buffer);
+//                    send(sd , buffer , strlen(buffer) , 0 );
+//                    puts(buffer);
 
-                    char bufferSplit[1025];
+                    char bufferSplit[1024];
                     strcpy(bufferSplit, buffer);
                     int f = 0;
                     int e = 0;
@@ -194,10 +194,11 @@ int main(int argc , char *argv[])
                         p = strtok (NULL, " ");
                     }
 
-                    regex_t regex;
                     if(e == 1){
                         char * ret = strstr(array[0], "QUIT");
                         if (ret){
+                            char* byMessage = "See you again!\n";
+                            send(sd,byMessage, strlen(byMessage), 0);
                             // Somebody disconnected , get his details and print
                             getpeername(sd , (struct sockaddr*)&address , \
                             (socklen_t*)&addrlen);
@@ -213,9 +214,19 @@ int main(int argc , char *argv[])
                     }
                     else if(e == 2){
                         if(strcmp(array[0], "GET") == 0){
-                            puts("Is Get");
-                            puts(array[0]);
-                            puts(array[1]);
+                            char res[300] = "key_nonexistent\n";
+                            char* resPointer = res;
+
+                            get(array[1], resPointer);
+
+                            char getMessage[200] = "> ";
+                            strcat(getMessage, array[0]);
+                            strcat(getMessage, ":");
+                            strcat(getMessage, array[1]);
+                            strcat(getMessage, ":");
+                            strcat(getMessage, res);
+
+                            send(sd, getMessage, strlen(getMessage), 0);
                         }
                         else if(strcmp(array[0], "DEL") == 0){
                             puts("Is Del");
@@ -231,12 +242,22 @@ int main(int argc , char *argv[])
                             puts("No Command");
                     }
                     else if(e == 3){
-                        puts("e is 3");
                         if(strcmp(array[0], "PUT") == 0){
-                            puts("Is Put");
-                            puts(array[0]);
-                            puts(array[1]);
-                            puts(array[2]);
+                            int putCode = put(array[1], array[2]);
+                            if(putCode == -1)
+                                puts("is Full");
+                            else if(putCode == 1)
+                                puts("Changes value");
+                            else
+                                puts("get gut");
+                            char putMessage[200] = "> ";
+                            strcat(putMessage, array[0]);
+                            strcat(putMessage, ":");
+                            strcat(putMessage, array[1]);
+                            strcat(putMessage, ":");
+                            strcat(putMessage, array[2]);
+
+                            send(sd, putMessage, strlen(putMessage), 0);
                         }
                         else
                             puts("No Command");
