@@ -1,37 +1,253 @@
-
-#include "server.h"
+//Example code: A simple server side code, which echos back the received message.
+//Handle multiple socket connections with select and fd_set on Linux
 #include <stdio.h>
+#include <string.h> //strlen
 #include <stdlib.h>
+#include <errno.h>
+#include <unistd.h> //close
+#include <arpa/inet.h> //close
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include "keyValStore.h"
+#include <regex.h>
 
-struct Server server_constructor(int domain, int service, int protocol, u_long interface, int port, int backlog, void (*launch)(struct Server *server)){
-    struct Server server;
+#define TRUE 1
+#define FALSE 0
+#define PORT 5678
 
-    server.domain = domain;
-    server.service = service;
-    server.protocol = protocol;
-    server.interface = interface;
-    server.port = port;
-    server.backlog = backlog;
+int main(int argc , char *argv[])
+{
+    int opt = TRUE;
+    int master_socket , addrlen , new_socket , client_socket[30] ,
+            max_clients = 30 , activity, i , valread , sd;
+    int max_sd;
+    struct sockaddr_in address;
 
-    server.address.sin_family = domain;
-    server.address.sin_port = htons(port);
-    server.address.sin_addr.s_addr = htonl(interface);
+    char buffer[1025]; //data buffer of 1K
 
-    server.socket = socket(domain, service, protocol);
-    if (server.socket == 0){
-        perror("Failed to connect socket!\n");
-        exit(1);
+    //set of socket descriptors
+    fd_set readfds;
+
+    //a message
+    char *message = "ECHO Daemon v1.0 \r\n";
+
+    //initialise all client_socket[] to 0 so not checked
+    for (i = 0; i < max_clients; i++)
+    {
+        client_socket[i] = 0;
     }
 
-    if((bind(server.socket, (struct sockaddr *)&server.address, sizeof(server.address))) < 0){
-        perror("Failed to bind socket!\n");
-        exit(1);
+    //create a master socket
+    if( (master_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)
+    {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
     }
 
-    if ((listen(server.socket, server.backlog)) < 0){
-        perror("Failed to start listening!\n");
-        exit(1);
+    //set master socket to allow multiple connections ,
+    //this is just a good habit, it will work without this
+    if( setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt,
+                   sizeof(opt)) < 0 )
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
     }
 
-    server.launch = launch;
-};
+    //type of socket created
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons( PORT );
+
+    //bind the socket to localhost port 8888
+    if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+    printf("Listener on port %d \n", PORT);
+
+    //try to specify maximum of 3 pending connections for the master socket
+    if (listen(master_socket, 3) < 0)
+    {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
+    //accept the incoming connection
+    addrlen = sizeof(address);
+    puts("Waiting for connections ...");
+
+    while(TRUE)
+    {
+        //clear the socket set
+        FD_ZERO(&readfds);
+
+        //add master socket to set
+        FD_SET(master_socket, &readfds);
+        max_sd = master_socket;
+
+        //add child sockets to set
+        for ( i = 0 ; i < max_clients ; i++)
+        {
+            //socket descriptor
+            sd = client_socket[i];
+
+            //if valid socket descriptor then add to read list
+            if(sd > 0)
+                FD_SET( sd , &readfds);
+
+            //highest file descriptor number, need it for the select function
+            if(sd > max_sd)
+                max_sd = sd;
+        }
+
+        //wait for an activity on one of the sockets , timeout is NULL ,
+        //so wait indefinitely
+        activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
+
+        if ((activity < 0) && (errno!=EINTR))
+        {
+            printf("select error");
+        }
+
+        //If something happened on the master socket ,
+        //then its an incoming connection
+        if (FD_ISSET(master_socket, &readfds))
+        {
+            if ((new_socket = accept(master_socket,
+                                     (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)
+            {
+                perror("accept");
+                exit(EXIT_FAILURE);
+            }
+
+            //inform user of socket number - used in send and receive commands
+            printf("New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs
+                    (address.sin_port));
+
+            //send new connection greeting message
+            if( send(new_socket, message, strlen(message), 0) != strlen(message) )
+            {
+                perror("send");
+            }
+
+            puts("Welcome message sent successfully");
+
+            //add new socket to array of sockets
+            for (i = 0; i < max_clients; i++)
+            {
+                //if position is empty
+                if( client_socket[i] == 0 )
+                {
+                    client_socket[i] = new_socket;
+                    printf("Adding to list of sockets as %d\n" , i);
+
+                    break;
+                }
+            }
+        }
+
+        //else its some IO operation on some other socket
+        for (i = 0; i < max_clients; i++)
+        {
+            sd = client_socket[i];
+
+            if (FD_ISSET( sd , &readfds))
+            {
+                //Check if it was for closing , and also read the
+                //incoming message
+                if ((valread = read( sd , buffer, 1024)) == 0)
+                {
+                    //Somebody disconnected , get his details and print
+                    getpeername(sd , (struct sockaddr*)&address , \
+						(socklen_t*)&addrlen);
+                    printf("Host disconnected , ip %s , port %d \n" ,
+                           inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
+
+                    //Close the socket and mark as 0 in list for reuse
+                    close( sd );
+                    client_socket[i] = 0;
+                }
+
+                    //Echo back the message that came in
+                else
+                {
+                    //set the string terminating NULL byte on the end
+                    //of the data read
+                    buffer[valread] = '\0';
+                    send(sd , buffer , strlen(buffer) , 0 );
+                    puts(buffer);
+
+                    char bufferSplit[1025];
+                    strcpy(bufferSplit, buffer);
+                    int f = 0;
+                    int e = 0;
+                    char *p = strtok (bufferSplit, " ");
+                    char *array[3];
+
+                    while (p != NULL)
+                    {
+                        e++;
+                        array[f++] = p;
+                        p = strtok (NULL, " ");
+                    }
+
+                    regex_t regex;
+                    if(e == 1){
+                        char * ret = strstr(array[0], "QUIT");
+                        if (ret){
+                            // Somebody disconnected , get his details and print
+                            getpeername(sd , (struct sockaddr*)&address , \
+                            (socklen_t*)&addrlen);
+                            printf("Host disconnected , ip %s , port %d \n" ,
+                                   inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
+
+                            //Close the socket and mark as 0 in list for reuse
+                            close( sd );
+                            client_socket[i] = 0;
+                        }
+                        else
+                            puts("No Command");
+                    }
+                    else if(e == 2){
+                        if(strcmp(array[0], "GET") == 0){
+                            puts("Is Get");
+                            puts(array[0]);
+                            puts(array[1]);
+                        }
+                        else if(strcmp(array[0], "DEL") == 0){
+                            puts("Is Del");
+                            puts(array[0]);
+                            puts(array[1]);
+                        }
+                        else if(strcmp(array[0], "SUB") == 0){
+                            puts("Is SUB");
+                            puts(array[0]);
+                            puts(array[1]);
+                        }
+                        else
+                            puts("No Command");
+                    }
+                    else if(e == 3){
+                        puts("e is 3");
+                        if(strcmp(array[0], "PUT") == 0){
+                            puts("Is Put");
+                            puts(array[0]);
+                            puts(array[1]);
+                            puts(array[2]);
+                        }
+                        else
+                            puts("No Command");
+                    }
+                    else
+                        puts("No Command");
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
