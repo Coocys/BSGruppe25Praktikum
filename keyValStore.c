@@ -97,6 +97,8 @@ int del(char* key){
     if (indexOfKey == -1)
         return -1;
 
+    strcpy(key, storage[indexOfKey].key);
+
     // Free the memory previously allocated
     free(storage[indexOfKey].key);
     free(storage[indexOfKey].value);

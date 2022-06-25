@@ -229,9 +229,19 @@ int main(int argc , char *argv[])
                             send(sd, getMessage, strlen(getMessage), 0);
                         }
                         else if(strcmp(array[0], "DEL") == 0){
-                            puts("Is Del");
-                            puts(array[0]);
-                            puts(array[1]);
+                            int delCode = del(array[1]);
+
+                            char getMessage[200] = "> ";
+                            strcat(getMessage, array[0]);
+                            strcat(getMessage, ":");
+                            strcat(getMessage, array[1]);
+
+                            if(delCode == -1)
+                                strcat(getMessage, ":key_nonexistent\n");
+                            else
+                                strcat(getMessage, ":key_deleted\n");
+
+                            send(sd, getMessage, strlen(getMessage), 0);
                         }
                         else if(strcmp(array[0], "SUB") == 0){
                             puts("Is SUB");
