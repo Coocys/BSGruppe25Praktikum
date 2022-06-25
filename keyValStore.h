@@ -18,4 +18,6 @@ int get(char* key, char* res);
 /// \return -1 => No pair with this key in storage\n 0 => Deletion successfully
 int del(char* key);
 
+
+
 #endif //BSGRUPPE25PRAKTIKUM_KEYVALSTORE_H

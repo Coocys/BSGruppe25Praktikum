@@ -1,11 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
 
 typedef struct Pair{
     char* key;
     char* value;
 } Pair;
+
+typedef struct Sub{
+    char* key;
+    pid_t process_id;
+} Sub;
 
 // Count of pairs in the storage
 int numOfPairs = 200;
@@ -20,9 +26,7 @@ void initializeStorage(){
     }
 }
 
-/// Searches for a Pair with index of the key in storage.
-/// \param key Pointer for the key string in search
-/// \return Index of Pair and -1 if none was found
+/// Get the Index of the pair in search
 int getIndexOfKey(char* key){
     for (int i = 0; i < numOfPairs; ++i) {
         if (storage[i].key != NULL && strcmp(storage[i].key, key) == 0){
@@ -32,7 +36,7 @@ int getIndexOfKey(char* key){
     return -1;
 }
 
-/// Prints the storage in a readable form
+/// Print the complete storage
 void printStorage(){
     for (int i = 0; i < numOfPairs; ++i) {
         printf("Index in storage %i\n \tKey: %s\n \tValue: %s\n", i, storage[i].key, storage[i].value);
