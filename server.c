@@ -22,6 +22,7 @@ int main(int argc , char *argv[])
     int opt = TRUE;
     int master_socket , addrlen , new_socket , client_socket[30] ,
             max_clients = 30 , activity, i , valread , sd;
+    int trans = 0;
     int max_sd;
     struct sockaddr_in address;
 
@@ -194,6 +195,7 @@ int main(int argc , char *argv[])
                         p = strtok (NULL, " ");
                     }
 
+
                     if(e == 1){
                         char * ret = strstr(array[0], "QUIT");
                         if (ret){
@@ -210,123 +212,67 @@ int main(int argc , char *argv[])
                             removeSub(sd);
                             client_socket[i] = 0;
                         }
-                        else
-                            puts("No Command");
                     }
-                    else if(e == 2){
-                        if(strcmp(array[0], "GET") == 0){
-                            char res[300] = "key_nonexistent\n";
-                            char* resPointer = res;
-
-                            get(array[1], resPointer);
-
-                            char getMessage[200] = "> ";
-                            strcat(getMessage, array[0]);
-                            strcat(getMessage, ":");
-                            strcat(getMessage, array[1]);
-                            strcat(getMessage, ":");
-                            strcat(getMessage, res);
-
-                            send(sd, getMessage, strlen(getMessage), 0);
-                        }
-                        else if(strcmp(array[0], "DEL") == 0){
-
-                            char res[300] = "key_nonexistent\n";
-                            char* resPointer = res;
-                            int subscribers[10];
-                            int pubCode = -1;
-
-                            int getCode = get(array[1], resPointer);
-
-                            if(getCode == 0){
-                                pubCode = pub(array[1], subscribers);
+                    if(trans == sd || trans == 0){
+                        if(e == 1){
+                            char * retBEG = strstr(array[0], "BEG");
+                            char * retEND = strstr(array[0], "END");
+                            if (retBEG){
+                                trans = sd;
                             }
-
-
-                            int delCode = del(array[1]);
-
-
-                            char getMessage[200] = "> ";
-                            strcat(getMessage, array[0]);
-                            strcat(getMessage, ":");
-                            strcat(getMessage, array[1]);
-
-                            if(delCode == -1)
-                                strcat(getMessage, ":key_nonexistent\n");
+                            else if (retEND){
+                                trans = 0;
+                            }
                             else
-                                strcat(getMessage, ":key_deleted\n");
+                                puts("No Command");
+                        }
+                        if(e == 2){
+                            if(strcmp(array[0], "GET") == 0){
+                                char res[300] = "key_nonexistent\n";
+                                char* resPointer = res;
 
-                            send(sd, getMessage, strlen(getMessage), 0);
+                                get(array[1], resPointer);
 
-                            if(delCode == 0 && pubCode == 0) {
+                                char getMessage[200] = "> ";
+                                strcat(getMessage, array[0]);
+                                strcat(getMessage, ":");
+                                strcat(getMessage, array[1]);
+                                strcat(getMessage, ":");
+                                strcat(getMessage, res);
 
-                                for(int j = 0; j < 10; ++j) {
+                                send(sd, getMessage, strlen(getMessage), 0);
+                            }
+                            else if(strcmp(array[0], "DEL") == 0){
 
-                                    if (subscribers[j] == 0)
-                                        break;
+                                char res[300] = "key_nonexistent\n";
+                                char* resPointer = res;
+                                int subscribers[10];
+                                int pubCode = -1;
 
-                                    if(subscribers[j] == sd)
-                                        continue;
+                                int getCode = get(array[1], resPointer);
 
-                                    send(subscribers[j], getMessage, strlen(getMessage), 0);
+                                if(getCode == 0){
+                                    pubCode = pub(array[1], subscribers);
                                 }
 
-                            }
-                        }
-                        else if(strcmp(array[0], "SUB") == 0){
-                            char res[300] = "key_nonexistent\n";
-                            char* resPointer = res;
-                            int getCode = get(array[1], resPointer);
 
-                            puts("Is SUB");
-                            puts(array[0]);
-                            puts(array[1]);
-
-                            char subMessage[200] = "> ";
-                            strcat(subMessage, array[0]);
-                            strcat(subMessage, ":");
-                            strcat(subMessage, array[1]);
-                            strcat(subMessage, "\n");
+                                int delCode = del(array[1]);
 
 
-                            if(getCode == 0)
-                                sub(array[1], sd);
+                                char getMessage[200] = "> ";
+                                strcat(getMessage, array[0]);
+                                strcat(getMessage, ":");
+                                strcat(getMessage, array[1]);
 
-                            if(getCode == -1){
-                                strcat(subMessage, ":");
-                                strcat(subMessage, res);
-                            }
+                                if(delCode == -1)
+                                    strcat(getMessage, ":key_nonexistent\n");
+                                else
+                                    strcat(getMessage, ":key_deleted\n");
 
+                                send(sd, getMessage, strlen(getMessage), 0);
 
+                                if(delCode == 0 && pubCode == 0) {
 
-                            send(sd, subMessage, strlen(subMessage), 0);
-                        }
-                        else
-                            puts("No Command");
-                    }
-                    else if(e == 3){
-                        if(strcmp(array[0], "PUT") == 0){
-                            int putCode = put(array[1], array[2]);
-                            if(putCode == -1)
-                                puts("is Full");
-                            else if(putCode == 1)
-                                puts("Changes value");
-                            else
-                                puts("get gut");
-                            char putMessage[200] = "> ";
-                            strcat(putMessage, array[0]);
-                            strcat(putMessage, ":");
-                            strcat(putMessage, array[1]);
-                            strcat(putMessage, ":");
-                            strcat(putMessage, array[2]);
-
-                            send(sd, putMessage, strlen(putMessage), 0);
-                            if(putCode == 1) {
-                                int subscribers[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                                int pubCode = pub(array[1], subscribers);
-                                for(int k = 0; k < 10; ++k)
-                                    printf("Index: %i, clientNo: %i\n", k, subscribers[k]);
-                                if(pubCode == 0){
                                     for(int j = 0; j < 10; ++j) {
 
                                         if (subscribers[j] == 0)
@@ -335,16 +281,84 @@ int main(int argc , char *argv[])
                                         if(subscribers[j] == sd)
                                             continue;
 
-                                        send(subscribers[j], putMessage, strlen(putMessage), 0);
+                                        send(subscribers[j], getMessage, strlen(getMessage), 0);
+                                    }
+
+                                }
+                            }
+                            else if(strcmp(array[0], "SUB") == 0){
+                                char res[300] = "key_nonexistent\n";
+                                char* resPointer = res;
+                                int getCode = get(array[1], resPointer);
+
+                                puts("Is SUB");
+                                puts(array[0]);
+                                puts(array[1]);
+
+                                char subMessage[200] = "> ";
+                                strcat(subMessage, array[0]);
+                                strcat(subMessage, ":");
+                                strcat(subMessage, array[1]);
+                                strcat(subMessage, "\n");
+
+
+                                if(getCode == 0)
+                                    sub(array[1], sd);
+
+                                if(getCode == -1){
+                                    strcat(subMessage, ":");
+                                    strcat(subMessage, res);
+                                }
+
+
+
+                                send(sd, subMessage, strlen(subMessage), 0);
+                            }
+                            else
+                                puts("No Command");
+                        }
+                        else if(e == 3){
+                            if(strcmp(array[0], "PUT") == 0){
+                                int putCode = put(array[1], array[2]);
+                                if(putCode == -1)
+                                    puts("is Full");
+                                else if(putCode == 1)
+                                    puts("Changes value");
+                                else
+                                    puts("get gut");
+                                char putMessage[200] = "> ";
+                                strcat(putMessage, array[0]);
+                                strcat(putMessage, ":");
+                                strcat(putMessage, array[1]);
+                                strcat(putMessage, ":");
+                                strcat(putMessage, array[2]);
+
+                                send(sd, putMessage, strlen(putMessage), 0);
+                                if(putCode == 1) {
+                                    int subscribers[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                                    int pubCode = pub(array[1], subscribers);
+                                    for(int k = 0; k < 10; ++k)
+                                        printf("Index: %i, clientNo: %i\n", k, subscribers[k]);
+                                    if(pubCode == 0){
+                                        for(int j = 0; j < 10; ++j) {
+
+                                            if (subscribers[j] == 0)
+                                                break;
+
+                                            if(subscribers[j] == sd)
+                                                continue;
+
+                                            send(subscribers[j], putMessage, strlen(putMessage), 0);
+                                        }
                                     }
                                 }
                             }
+                            else
+                                puts("No Command");
                         }
                         else
                             puts("No Command");
                     }
-                    else
-                        puts("No Command");
                 }
             }
         }

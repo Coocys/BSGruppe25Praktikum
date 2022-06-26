@@ -9,12 +9,6 @@ typedef struct Pair{
     int subscribers[10];
 } Pair;
 
-typedef struct Sub{
-    char* key;
-    pid_t process_id;
-} Sub;
-
-
 // Count of pairs in the storage
 int numOfPairs = 200;
 // The storage
