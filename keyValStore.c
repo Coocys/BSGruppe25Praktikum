@@ -164,7 +164,6 @@ int pub(char* key, int * subscribers) {
 }
 
 void removeSub(int subscriber){
-    int subscribers[10];
     int subPos, lastPos = 12;
 
     for(int i; i < 10; ++i){
@@ -182,7 +181,7 @@ void removeSub(int subscriber){
 
             if(subPos != 12 && lastPos != 12) {
                 if (subPos != lastPos)
-                    subscribers[subPos] = storage[i].subscribers[lastPos];
+                    storage[i].subscribers[subPos] = storage[i].subscribers[lastPos];
 
                 storage[i].subscribers[lastPos] = 0;
             }
