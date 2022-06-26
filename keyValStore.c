@@ -61,12 +61,13 @@ int put(char* key, char* value){
     else {
         for (int i = 0; i < numOfPairs; ++i) {
             if (storage[i].key == NULL){
+                puts("PUT NEW VALUE");
                 storage[i].key = (char*) malloc(sizeof (char*));
                 strcpy(storage[i].key, key);
                 storage[i].value = (char*) malloc(sizeof (char*));
                 strcpy(storage[i].value, value);
-                for(int i; i < 10; ++i){
-                    storage->subscribers[i] = 0;
+                for(int j = 0; j < 10; ++j){
+                    storage->subscribers[j] = 0;
                 }
                 return 0;
             }
@@ -110,7 +111,6 @@ int del(char* key){
     // Reset the pointer of the struct to NULL
     storage[indexOfKey].key = NULL;
     storage[indexOfKey].value = NULL;
-    storage[indexOfKey].subscribers = NULL;
 
     return 0;
 }
