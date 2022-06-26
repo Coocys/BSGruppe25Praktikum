@@ -265,7 +265,7 @@ int main(int argc , char *argv[])
                                     if (subscribers[j] == 0)
                                         break;
 
-                                    send(client_socket[subscribers[i]], getMessage, strlen(getMessage), 0);
+                                    send(subscribers[i], getMessage, strlen(getMessage), 0);
                                 }
 
                             }
@@ -329,7 +329,8 @@ int main(int argc , char *argv[])
                                         if (subscribers[j] == 0)
                                             break;
 
-                                        send(client_socket[subscribers[i]], putMessage, strlen(putMessage), 0);
+
+                                        send(subscribers[i], putMessage, strlen(putMessage), 0);
                                     }
                                 }
                             }
