@@ -117,24 +117,28 @@ int del(char* key){
 
 int sub(char* key, int clientNo){
 
+    printf("sub test1\n");
     int indexOfKey = getIndexOfKey(key);
 
     // If key is not in storage return with -1
     if (indexOfKey == -1)
         return -1;
 
+    printf("sub test2\n");
     for(int i = 0; i < 10; ++i){
         if(storage[indexOfKey].subscribers[i] == 0){
             storage[indexOfKey].subscribers[i] = clientNo;
+            printf("sub test3\n");
             return 0;
         }
     }
-
+    printf("sub test4\n");
     return -1;
 }
 
-int pub(char* key, int* subscribers) {
+int pub(char* key, int * subscribers) {
 
+    printf("pub test1\n");
     int indexOfKey = getIndexOfKey(key);
     int j = 0;
 
@@ -142,16 +146,17 @@ int pub(char* key, int* subscribers) {
     if (indexOfKey == -1)
         return -1;
 
+    printf("pub test2\n");
     if(storage[indexOfKey].subscribers[0] == 0)
         return -1;
 
+    printf("pub test3\n");
     while(storage[indexOfKey].subscribers[j] != 0){
         subscribers[j] = storage[indexOfKey].subscribers[j];
         ++j;
     }
-
-    if(!subscribers)
-        return -1;
+    j = 0;
+    printf("pub test4\n");
 
     return 0;
 }
@@ -160,7 +165,7 @@ void removeSub(int subscriber){
     int subscribers[10];
     int subPos, lastPos = 12;
 
-    for(int i; i < (sizeof(storage)/ sizeof(Pair)); ++i){
+    for(int i; i < 10; ++i){
 
         if(storage[i].subscribers[0] == 0)
             continue;
