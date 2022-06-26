@@ -260,12 +260,15 @@ int main(int argc , char *argv[])
 
                             if(delCode == 0 && pubCode == 0) {
 
-                                for(int j = 0; i < 10; ++j) {
+                                for(int j = 0; j < 10; ++j) {
 
                                     if (subscribers[j] == 0)
                                         break;
 
-                                    send(subscribers[i], getMessage, strlen(getMessage), 0);
+                                    if(subscribers[j] == sd)
+                                        continue;
+
+                                    send(subscribers[j], getMessage, strlen(getMessage), 0);
                                 }
 
                             }
@@ -329,8 +332,10 @@ int main(int argc , char *argv[])
                                         if (subscribers[j] == 0)
                                             break;
 
+                                        if(subscribers[j] == sd)
+                                            continue;
 
-                                        send(subscribers[i], putMessage, strlen(putMessage), 0);
+                                        send(subscribers[j], putMessage, strlen(putMessage), 0);
                                     }
                                 }
                             }
