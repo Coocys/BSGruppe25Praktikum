@@ -6,12 +6,14 @@
 typedef struct Pair{
     char* key;
     char* value;
+    int subscribers[10];
 } Pair;
 
 typedef struct Sub{
     char* key;
     pid_t process_id;
 } Sub;
+
 
 // Count of pairs in the storage
 int numOfPairs = 200;
@@ -50,7 +52,7 @@ int put(char* key, char* value){
 
     // printf("Index of key: %i\n", indexOfKey);
 
-    // If ke is in storage change value of that key
+    // If key is in storage change value of that key
     if (indexOfKey != -1){
         strcpy(storage[indexOfKey].value, value);
         return 1;
@@ -63,6 +65,9 @@ int put(char* key, char* value){
                 strcpy(storage[i].key, key);
                 storage[i].value = (char*) malloc(sizeof (char*));
                 strcpy(storage[i].value, value);
+                for(int i; i < 10; ++i){
+                    storage->subscribers[i] = 0;
+                }
                 return 0;
             }
         }
@@ -105,6 +110,48 @@ int del(char* key){
     // Reset the pointer of the struct to NULL
     storage[indexOfKey].key = NULL;
     storage[indexOfKey].value = NULL;
+    storage[indexOfKey].subscribers = NULL;
+
+    return 0;
+}
+
+int sub(char* key, int clientNo){
+
+    int indexOfKey = getIndexOfKey(key);
+
+    // If key is not in storage return with -1
+    if (indexOfKey == -1)
+        return -1;
+
+    for(int i = 0; i < 10; ++i){
+        if(storage[indexOfKey].subscribers[i] == 0){
+            storage[indexOfKey].subscribers[i] = clientNo;
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
+int pub(char* key, int* subscribers) {
+
+    int indexOfKey = getIndexOfKey(key);
+    int j = 0;
+
+    // If key is not in storage return with -1
+    if (indexOfKey == -1)
+        return -1;
+
+    if(storage[indexOfKey].subscribers[0] == 0)
+        return -1;
+
+    while(storage[indexOfKey].subscribers[j] != 0){
+        subscribers[j] = storage[indexOfKey].subscribers[j];
+        ++j;
+    }
+
+    if(!subscribers)
+        return -1;
 
     return 0;
 }

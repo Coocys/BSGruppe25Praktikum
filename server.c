@@ -60,7 +60,7 @@ int main(int argc , char *argv[])
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons( PORT );
 
-    //bind the socket to localhost port 8888
+    //bind the socket to localhost port 5678
     if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)
     {
         perror("bind failed");
@@ -197,8 +197,8 @@ int main(int argc , char *argv[])
                     if(e == 1){
                         char * ret = strstr(array[0], "QUIT");
                         if (ret){
-                            char* byMessage = "See you again!\n";
-                            send(sd,byMessage, strlen(byMessage), 0);
+                            char* byeMessage = "See you again!\n";
+                            send(sd,byeMessage, strlen(byeMessage), 0);
                             // Somebody disconnected , get his details and print
                             getpeername(sd , (struct sockaddr*)&address , \
                             (socklen_t*)&addrlen);
@@ -229,7 +229,16 @@ int main(int argc , char *argv[])
                             send(sd, getMessage, strlen(getMessage), 0);
                         }
                         else if(strcmp(array[0], "DEL") == 0){
+
+                            char res[300] = "key_nonexistent\n";
+                            char* resPointer = res;
+
+
+                            get(array[1], resPointer);
+
+
                             int delCode = del(array[1]);
+
 
                             char getMessage[200] = "> ";
                             strcat(getMessage, array[0]);
@@ -242,11 +251,47 @@ int main(int argc , char *argv[])
                                 strcat(getMessage, ":key_deleted\n");
 
                             send(sd, getMessage, strlen(getMessage), 0);
+
+                            if(delCode == 0) {
+                                int subscribers[10];
+                                int pubCode = pub(array[1], subscribers);
+                                if(pubCode == 0){
+                                    for(int j = 0; i < 10; ++j) {
+
+                                        if (subscribers[j] == 0)
+                                            break;
+
+                                        send(client_socket[subscribers[i]], getMessage, strlen(getMessage), 0);
+                                    }
+                                }
+                            }
                         }
                         else if(strcmp(array[0], "SUB") == 0){
+                            char res[300] = "key_nonexistent\n";
+                            char* resPointer = res;
+                            int getCode = get(array[1], resPointer);
+
                             puts("Is SUB");
                             puts(array[0]);
                             puts(array[1]);
+
+                            char subMessage[200] = "> ";
+                            strcat(subMessage, array[0]);
+                            strcat(subMessage, ":");
+                            strcat(subMessage, array[1]);
+
+
+                            if(getCode == 0)
+                                sub(array[1], sd);
+
+                            if(getCode == -1){
+                                strcat(subMessage, ":");
+                                strcat(subMessage, res);
+                            }
+
+
+
+                            send(sd, subMessage, strlen(subMessage), 0);
                         }
                         else
                             puts("No Command");
@@ -268,6 +313,19 @@ int main(int argc , char *argv[])
                             strcat(putMessage, array[2]);
 
                             send(sd, putMessage, strlen(putMessage), 0);
+                            if(putCode == 1) {
+                                int subscribers[10];
+                                int pubCode = pub(array[1], subscribers);
+                                if(pubCode == 0){
+                                    for(int j = 0; i < 10; ++j) {
+
+                                        if (subscribers[j] == 0)
+                                            break;
+
+                                        send(client_socket[subscribers[i]], putMessage, strlen(putMessage), 0);
+                                    }
+                                }
+                            }
                         }
                         else
                             puts("No Command");
@@ -281,4 +339,3 @@ int main(int argc , char *argv[])
 
     return 0;
 }
-
