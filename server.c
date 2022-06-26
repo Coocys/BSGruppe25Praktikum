@@ -283,7 +283,7 @@ int main(int argc , char *argv[])
                             strcat(subMessage, array[0]);
                             strcat(subMessage, ":");
                             strcat(subMessage, array[1]);
-                            strcat(subMessage, "/n");
+                            strcat(subMessage, "\n");
 
 
                             if(getCode == 0)

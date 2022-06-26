@@ -108,7 +108,6 @@ int del(char* key){
     // Free the memory previously allocated
     free(storage[indexOfKey].key);
     free(storage[indexOfKey].value);
-    free(storage[indexOfKey].subscribers);
     // Reset the pointer of the struct to NULL
     storage[indexOfKey].key = NULL;
     storage[indexOfKey].value = NULL;
