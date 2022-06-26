@@ -321,6 +321,8 @@ int main(int argc , char *argv[])
                             if(putCode == 1) {
                                 int subscribers[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
                                 int pubCode = pub(array[1], subscribers);
+                                for(int k = 0; k < 10; ++k)
+                                    printf("Index: %i, clientNo: %i\n", k, subscribers[k]);
                                 if(pubCode == 0){
                                     for(int j = 0; i < 10; ++j) {
 

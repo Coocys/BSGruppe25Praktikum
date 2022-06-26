@@ -158,8 +158,7 @@ int pub(char* key, int * subscribers) {
     }
     j = 0;
     printf("pub filled array\n");
-    for(int i = 0; i < 10; ++i)
-        printf("Index: %i, clientNo: %i\n", i, storage[indexOfKey].subscribers[i]);
+
 
     return 0;
 }
