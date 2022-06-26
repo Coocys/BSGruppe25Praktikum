@@ -319,7 +319,7 @@ int main(int argc , char *argv[])
 
                             send(sd, putMessage, strlen(putMessage), 0);
                             if(putCode == 1) {
-                                int subscribers[10];
+                                int subscribers[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
                                 int pubCode = pub(array[1], subscribers);
                                 if(pubCode == 0){
                                     for(int j = 0; i < 10; ++j) {

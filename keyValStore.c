@@ -117,28 +117,29 @@ int del(char* key){
 
 int sub(char* key, int clientNo){
 
-    printf("sub test1\n");
+    printf("sub start\n");
     int indexOfKey = getIndexOfKey(key);
 
     // If key is not in storage return with -1
     if (indexOfKey == -1)
         return -1;
 
-    printf("sub test2\n");
+    printf("sub got key index\n");
     for(int i = 0; i < 10; ++i){
         if(storage[indexOfKey].subscribers[i] == 0){
             storage[indexOfKey].subscribers[i] = clientNo;
-            printf("sub test3\n");
+            printf("sub added subscriber to array\n");
+            printf("index: %i, sub number: %i\n", i, clientNo);
             return 0;
         }
     }
-    printf("sub test4\n");
+    printf("sub failed\n");
     return -1;
 }
 
 int pub(char* key, int * subscribers) {
 
-    printf("pub test1\n");
+    printf("pub start\n");
     int indexOfKey = getIndexOfKey(key);
     int j = 0;
 
@@ -146,17 +147,19 @@ int pub(char* key, int * subscribers) {
     if (indexOfKey == -1)
         return -1;
 
-    printf("pub test2\n");
+    printf("pub got key index\n");
     if(storage[indexOfKey].subscribers[0] == 0)
         return -1;
 
-    printf("pub test3\n");
+    printf("pub sub array not empty\n");
     while(storage[indexOfKey].subscribers[j] != 0){
         subscribers[j] = storage[indexOfKey].subscribers[j];
         ++j;
     }
     j = 0;
-    printf("pub test4\n");
+    printf("pub filled array\n");
+    for(int i = 0; i < 10; ++i)
+        printf("Index: %i, clientNo: %i\n", i, storage[indexOfKey].subscribers[i]);
 
     return 0;
 }
