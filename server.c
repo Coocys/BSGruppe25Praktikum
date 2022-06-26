@@ -233,9 +233,14 @@ int main(int argc , char *argv[])
 
                             char res[300] = "key_nonexistent\n";
                             char* resPointer = res;
+                            int subscribers[10];
+                            int pubCode = -1;
 
+                            int getCode = get(array[1], resPointer);
 
-                            get(array[1], resPointer);
+                            if(getCode == 0){
+                                pubCode = pub(array[1], subscribers);
+                            }
 
 
                             int delCode = del(array[1]);
@@ -253,18 +258,16 @@ int main(int argc , char *argv[])
 
                             send(sd, getMessage, strlen(getMessage), 0);
 
-                            if(delCode == 0) {
-                                int subscribers[10];
-                                int pubCode = pub(array[1], subscribers);
-                                if(pubCode == 0){
-                                    for(int j = 0; i < 10; ++j) {
+                            if(delCode == 0 && pubCode == 0) {
 
-                                        if (subscribers[j] == 0)
-                                            break;
+                                for(int j = 0; i < 10; ++j) {
 
-                                        send(client_socket[subscribers[i]], getMessage, strlen(getMessage), 0);
-                                    }
+                                    if (subscribers[j] == 0)
+                                        break;
+
+                                    send(client_socket[subscribers[i]], getMessage, strlen(getMessage), 0);
                                 }
+
                             }
                         }
                         else if(strcmp(array[0], "SUB") == 0){
