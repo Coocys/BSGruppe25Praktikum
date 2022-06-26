@@ -207,6 +207,7 @@ int main(int argc , char *argv[])
 
                             //Close the socket and mark as 0 in list for reuse
                             close( sd );
+                            removeSub(sd);
                             client_socket[i] = 0;
                         }
                         else

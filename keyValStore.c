@@ -155,3 +155,32 @@ int pub(char* key, int* subscribers) {
 
     return 0;
 }
+
+void removeSub(int subscriber){
+    int subscribers[10];
+    int subPos, lastPos = 12;
+
+    for(int i; i < (sizeof(storage)/ sizeof(Pair)); ++i){
+
+        if(storage[i].subscribers[0] == 0)
+            continue;
+
+        for(int j = 0; j < 10; ++j){
+
+            if(storage[i].subscribers[j] == 0)
+                lastPos = j-1;
+
+            if(storage[i].subscribers[j] == subscriber)
+                subPos = j;
+
+            if(subPos != 12 && lastPos != 12) {
+                if (subPos != lastPos)
+                    subscribers[subPos] = storage[i].subscribers[lastPos];
+
+                storage[i].subscribers[lastPos] = 0;
+            }
+        }
+        subPos = 0;
+        lastPos = 0;
+    }
+}
